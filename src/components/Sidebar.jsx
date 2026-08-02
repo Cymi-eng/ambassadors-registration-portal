@@ -1,78 +1,69 @@
-import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  UserPlus,
-  Users,
-  ClipboardList,
-  LogOut,
-} from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
-export default function Sidebar() {
-  const location = useLocation();
+const links = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/register-member", label: "Register Member" },
+  { to: "/register-visitor", label: "Register Visitor" },
+  { to: "/members", label: "Members" },
+  { to: "/visitors", label: "Visitors" },
+];
 
-  const menus = [
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Register Member",
-      path: "/register-member",
-      icon: UserPlus,
-    },
-    {
-      name: "Register Visitor",
-      path: "/register-visitor",
-      icon: ClipboardList,
-    },
-    {
-      name: "Members",
-      path: "/members",
-      icon: Users,
-    },
-    {
-      name: "Visitors",
-      path: "/visitors",
-      icon: Users,
-    },
-  ];
+export default function Sidebar({ open, onClose }) {
+  const { role } = useAuth();
 
   return (
-    <aside className="w-72 bg-blue-900 text-white min-h-screen p-6">
+    <>
+      {/* backdrop */}
+      {open && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/30 z-40"
+          aria-hidden="true"
+        />
+      )}
 
-      <h1 className="text-2xl font-bold mb-10">
-        Ambassadors Portal
-      </h1>
+      {/* drawer */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 z-50 transform transition-transform duration-200 ease-in-out ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <span className="font-semibold text-gray-900">Ambassadors</span>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-700 transition"
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-      <div className="space-y-2">
-
-        {menus.map((menu) => {
-          const Icon = menu.icon;
-
-          return (
-            <Link
-              key={menu.path}
-              to={menu.path}
-              className={`flex items-center gap-3 p-3 rounded-lg transition ${
-                location.pathname === menu.path
-                  ? "bg-yellow-500 text-black"
-                  : "hover:bg-blue-800"
-              }`}
+        <nav className="p-3 space-y-1">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded-lg text-sm transition ${
+                  isActive
+                    ? "bg-amber-50 text-amber-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`
+              }
             >
-              <Icon size={20} />
-              {menu.name}
-            </Link>
-          );
-        })}
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
 
-      </div>
-
-      <button className="flex items-center gap-3 mt-20 text-red-300 hover:text-red-500">
-        <LogOut size={20} />
-        Logout
-      </button>
-
-    </aside>
+        <div className="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-gray-100">
+          <p className="text-xs text-gray-400 capitalize">Signed in as {role || "secretary"}</p>
+        </div>
+      </aside>
+    </>
   );
 }
