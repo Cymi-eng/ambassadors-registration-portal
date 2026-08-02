@@ -8,6 +8,8 @@ import RegisterMember from "../pages/RegisterMember";
 import RegisterVisitor from "../pages/RegisterVisitor";
 import Members from "../pages/Members";
 import Visitors from "../pages/Visitors";
+import MemberDetail from "../pages/MemberDetail";
+import VisitorDetail from "../pages/VisitorDetail";
 
 export default function AppRoutes() {
   return (
@@ -26,7 +28,9 @@ export default function AppRoutes() {
         <Route path="/register-member" element={<RegisterMember />} />
         <Route path="/register-visitor" element={<RegisterVisitor />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/members/:id" element={<MemberDetail />} />
         <Route path="/visitors" element={<Visitors />} />
+        <Route path="/visitors/:id" element={<VisitorDetail />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

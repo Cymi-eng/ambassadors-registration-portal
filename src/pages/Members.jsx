@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/config/firebase";
-import { useAuth } from "@/context/AuthContext";
-import Loader from "@/components/Loader";
+import { useAuth } from "../context/AuthContext";
+import Loader from "../components/Loader";
 
 export default function Members() {
   const { user, role } = useAuth();
@@ -63,7 +64,11 @@ export default function Members() {
       ) : (
         <div className="divide-y divide-gray-100 border border-gray-100 rounded-xl overflow-hidden">
           {filtered.map((m) => (
-            <div key={m.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+            <Link
+              to={`/members/${m.id}`}
+              key={m.id}
+              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition"
+            >
               <div>
                 <p className="text-sm font-medium text-gray-900">{m.fullName}</p>
                 <p className="text-xs text-gray-500">
@@ -73,7 +78,7 @@ export default function Members() {
               {role === "admin" && (
                 <span className="text-xs text-gray-400">by {m.createdByName}</span>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       )}
