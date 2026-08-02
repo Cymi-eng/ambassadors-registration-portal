@@ -8,6 +8,7 @@ const links = [
   { to: "/register-visitor", label: "Register Visitor" },
   { to: "/members", label: "Members" },
   { to: "/visitors", label: "Visitors" },
+  { to: "/attendance", label: "Attendance" },
 ];
 
 export default function Sidebar({ open, onClose }) {
