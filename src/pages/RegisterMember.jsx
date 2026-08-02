@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db } from "../config/firebase";
 import { useAuth } from "../context/AuthContext";
 
 const emptyForm = {

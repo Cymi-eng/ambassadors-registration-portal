@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db } from "../config/firebase";
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 
