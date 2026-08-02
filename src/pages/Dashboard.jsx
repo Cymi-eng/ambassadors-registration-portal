@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 
@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [visitorCount, setVisitorCount] = useState(0);
   const [followUpCount, setFollowUpCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -29,16 +30,30 @@ export default function Dashboard() {
       if (loaded >= 2) setLoading(false);
     };
 
-    const unsubMembers = onSnapshot(membersQuery, (snap) => {
-      setMemberCount(snap.size);
-      markLoaded();
-    });
+    const handleError = (err) => {
+      console.error("Dashboard listener error:", err);
+      setError(err.message || "Failed to load dashboard data.");
+      setLoading(false);
+    };
 
-    const unsubVisitors = onSnapshot(visitorsQuery, (snap) => {
-      setVisitorCount(snap.size);
-      setFollowUpCount(snap.docs.filter((d) => d.data().followUpNeeded).length);
-      markLoaded();
-    });
+    const unsubMembers = onSnapshot(
+      membersQuery,
+      (snap) => {
+        setMemberCount(snap.size);
+        markLoaded();
+      },
+      handleError
+    );
+
+    const unsubVisitors = onSnapshot(
+      visitorsQuery,
+      (snap) => {
+        setVisitorCount(snap.size);
+        setFollowUpCount(snap.docs.filter((d) => d.data().followUpNeeded).length);
+        markLoaded();
+      },
+      handleError
+    );
 
     return () => {
       unsubMembers();
@@ -47,6 +62,17 @@ export default function Dashboard() {
   }, [user, role]);
 
   if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <div className="max-w-lg mx-auto p-6 text-center">
+        <p className="text-sm text-red-600 font-medium mb-2">
+          Couldn't load dashboard data
+        </p>
+        <p className="text-xs text-gray-500">{error}</p>
+      </div>
+    );
+  }
 
   const displayName = profile?.name || profile?.email?.split("@")[0] || "there";
 
