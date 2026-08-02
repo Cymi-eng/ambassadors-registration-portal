@@ -64,8 +64,8 @@ export default function RegisterMember() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-xl font-semibold text-gray-900 mb-1">Register Member</h1>
-      <p className="text-sm text-gray-500 mb-6">Add a new church member to the records.</p>
+      <h1 className="text-xl font-semibold text-gray-900 mb-1">Register an Ambassador</h1>
+      <p className="text-sm text-gray-500 mb-6">Add a new Ambassador to the records.</p>
 
       {message && (
         <div
