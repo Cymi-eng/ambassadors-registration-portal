@@ -20,7 +20,7 @@ export default function Navbar({ onMenuClick }) {
           <h2 className="text-lg font-semibold text-gray-900">
             Welcome, {displayName}
           </h2>
-          <p className="text-gray-500 text-sm">Church Management System</p>
+          <p className="text-gray-500 text-sm">Ambassadors Management System</p>
         </div>
       </div>
 
