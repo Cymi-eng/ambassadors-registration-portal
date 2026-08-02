@@ -11,7 +11,7 @@ import Visitors from "../pages/Visitors";
 import MemberDetail from "../pages/MemberDetail";
 import VisitorDetail from "../pages/VisitorDetail";
 import Attendance from "../pages/Attendance";
-import AttendanceHistory from "../pages/AttendanceHistory";
+import AttendanceHistory from "../pages/Attendancehistory";
 
 export default function AppRoutes() {
   return (
