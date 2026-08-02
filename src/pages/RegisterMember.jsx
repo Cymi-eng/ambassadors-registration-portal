@@ -8,10 +8,7 @@ const emptyForm = {
   phone: "",
   email: "",
   gender: "",
-  dob: "",
   address: "",
-  department: "", // e.g. choir, ushering, youth
-  joinDate: "",
 };
 
 export default function RegisterMember() {
@@ -101,9 +98,6 @@ export default function RegisterMember() {
             <option value="female">Female</option>
           </select>
         </div>
-        <Field label="Date of Birth" name="dob" type="date" value={form.dob} onChange={handleChange} />
-        <Field label="Department" name="department" value={form.department} onChange={handleChange} />
-        <Field label="Join Date" name="joinDate" type="date" value={form.joinDate} onChange={handleChange} />
         <div className="sm:col-span-2">
           <label className="block text-sm text-gray-600 mb-1">Address</label>
           <textarea
