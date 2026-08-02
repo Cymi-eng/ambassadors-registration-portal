@@ -11,6 +11,7 @@ import Visitors from "../pages/Visitors";
 import MemberDetail from "../pages/MemberDetail";
 import VisitorDetail from "../pages/VisitorDetail";
 import Attendance from "../pages/Attendance";
+import AttendanceHistory from "../pages/AttendanceHistory";
 
 export default function AppRoutes() {
   return (
@@ -33,6 +34,7 @@ export default function AppRoutes() {
         <Route path="/visitors" element={<Visitors />} />
         <Route path="/visitors/:id" element={<VisitorDetail />} />
         <Route path="/attendance" element={<Attendance />} />
+        <Route path="/attendance-history" element={<AttendanceHistory />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
