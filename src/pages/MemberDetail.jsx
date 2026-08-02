@@ -1,83 +1,161 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import { ArrowLeft, Phone, CalendarCheck } from "lucide-react";
+
 import { db } from "@/config/firebase";
-import Loader from "../components/Loader";
+import { useAuth } from "@/context/AuthContext";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function MemberDetail() {
   const { id } = useParams();
-  const [member, setMember] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { role } = useAuth();
 
+  const [member, setMember] = useState(null);
+  const [loadingMember, setLoadingMember] = useState(true);
+
+  const [attendance, setAttendance] = useState([]);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+
+  // The member's profile — created once, never duplicated week to week.
   useEffect(() => {
-    const fetchMember = async () => {
+    const loadMember = async () => {
       try {
-        const snap = await getDoc(doc(db, "members", id));
-        if (snap.exists()) {
-          setMember({ id: snap.id, ...snap.data() });
-        } else {
-          setError("This member record no longer exists.");
+        const memberSnap = await getDoc(doc(db, "members", id));
+        if (memberSnap.exists()) {
+          setMember({ id: memberSnap.id, ...memberSnap.data() });
         }
-      } catch (err) {
-        console.error(err);
-        setError(err.message || "Failed to load member.");
+      } catch (error) {
+        console.error("Error loading member:", error);
       } finally {
-        setLoading(false);
+        setLoadingMember(false);
       }
     };
-    fetchMember();
+
+    loadMember();
   }, [id]);
 
-  if (loading) return <Loader />;
-
-  if (error) {
-    return (
-      <div className="max-w-lg mx-auto p-6 text-center">
-        <p className="text-sm text-red-600 font-medium mb-2">{error}</p>
-        <Link to="/members" className="text-sm text-amber-700 hover:underline">
-          Back to members
-        </Link>
-      </div>
+  // Every Sunday this person has been marked present.
+  useEffect(() => {
+    const attendanceRef = collection(db, "attendance");
+    const attendanceQuery = query(
+      attendanceRef,
+      where("memberId", "==", id),
+      orderBy("date", "desc")
     );
-  }
 
-  const joined =
-    member.createdAt?.toDate?.() ? member.createdAt.toDate().toLocaleDateString() : "—";
+    const unsubscribe = onSnapshot(
+      attendanceQuery,
+      (snapshot) => {
+        const data = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }));
+        setAttendance(data);
+        setLoadingAttendance(false);
+      },
+      (error) => {
+        console.error("Error loading attendance history:", error);
+        setLoadingAttendance(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [id]);
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <Link to="/members" className="text-sm text-gray-500 hover:text-gray-800 transition mb-4 inline-block">
-        ← Back to members
-      </Link>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
 
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-800"
+      >
+        <ArrowLeft size={16} />
+        Back
+      </button>
+
+      {/* Profile */}
       <div className="border border-gray-100 rounded-xl p-6">
-        <h1 className="text-xl font-semibold text-gray-900 mb-1">{member.fullName}</h1>
-        <p className="text-sm text-gray-500 mb-6">Recorded by {member.createdByName || "Unknown"} on {joined}</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Detail label="Phone" value={member.phone} />
-          <Detail label="Email" value={member.email} />
-          <Detail label="Gender" value={member.gender} capitalize />
-          <Detail label="Date of Birth" value={member.dob} />
-          <Detail label="Department" value={member.department} />
-          <Detail label="Join Date" value={member.joinDate} />
-          <div className="sm:col-span-2">
-            <Detail label="Address" value={member.address} />
+        {loadingMember ? (
+          <p className="text-sm text-gray-400">Loading...</p>
+        ) : !member ? (
+          <p className="text-sm text-gray-400">Member not found.</p>
+        ) : (
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900 break-words">
+                {member.fullName || "Unnamed Member"}
+              </h1>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-sm text-gray-500">
+                {member.phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone size={13} />
+                    {member.phone}
+                  </span>
+                )}
+                {member.department && <span>· {member.department}</span>}
+              </div>
+            </div>
+
+            {role === "admin" && member.createdByName && (
+              <span className="text-xs text-gray-400 shrink-0">
+                Registered by {member.createdByName}
+              </span>
+            )}
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+        )}
 
-function Detail({ label, value, capitalize = false }) {
-  return (
-    <div>
-      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-sm text-gray-900 ${capitalize ? "capitalize" : ""}`}>
-        {value || <span className="text-gray-300">Not provided</span>}
-      </p>
+      </div>
+
+      {/* Attendance history */}
+      <div className="border border-gray-100 rounded-xl overflow-hidden">
+
+        <div className="flex items-center justify-between px-6 pt-6 mb-4">
+          <h2 className="text-base font-semibold text-gray-900">
+            Attendance History
+          </h2>
+          <span className="flex items-center gap-1.5 text-sm text-gray-500">
+            <CalendarCheck size={14} />
+            {loadingAttendance ? "—" : `${attendance.length} Sunday${attendance.length === 1 ? "" : "s"}`}
+          </span>
+        </div>
+
+        {loadingAttendance ? (
+          <p className="text-sm text-gray-400 px-6 pb-6">Loading...</p>
+        ) : attendance.length === 0 ? (
+          <p className="text-sm text-gray-400 px-6 pb-6">
+            No attendance recorded yet.
+          </p>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {attendance.map((record) => (
+              <div
+                key={record.id}
+                className="flex items-center justify-between px-6 py-3"
+              >
+                <span className="text-sm font-medium text-gray-900">
+                  {record.date}
+                </span>
+                <span className="text-xs text-gray-400">
+                  Marked by {record.createdByName || "Unknown"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
+
     </div>
   );
 }
